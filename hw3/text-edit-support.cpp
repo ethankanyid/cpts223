@@ -57,8 +57,11 @@ bool insert_at(int line, string feed, vector<string> *buffer)
 }
 
 bool insert_after(int line, string feed, vector<string> *buffer)
-{    
-    buffer->insert(buffer->begin() + line, feed);
+{   
+    if (buffer->empty())
+        buffer->insert(buffer->begin(), feed);
+    else
+        buffer->insert(buffer->begin() + line, feed);
 
     return true;
 }

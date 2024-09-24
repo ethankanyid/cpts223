@@ -1,6 +1,6 @@
 #include "text-edit.h"
 
-int main ()
+int main (int argc, char *argv[])
 // text editer within the command line
 // should i use a vector and a trys and throws and excpetions?
 {
@@ -10,37 +10,33 @@ int main ()
     int begin = 0;
     int end = 0;
     char command = '\0';
-    string filename = "";
-    string feed = "";
     char temp = '\0';
     bool change = false;
     bool staychanged = false;
+    string feed = "";
+    string filename = "";
 
-    cout << "Welcome to Notepad--!" << endl << "Enter 'H' for help and 'Q' to quit." << endl << endl;
-
-    cout << "Please enter a file to edit: ";
-    cin >> filename;
-
-    ifstream file;
-    file.open(filename);
-    if (!file.is_open())
+    if (argc > 2)
     {
-        cout << "Exception: No such file exists" << endl << "Handled: Creating new file..." << endl;
-        ofstream new_file;
-        new_file.open(filename);
-        new_file.close();
+        cout << "Exception: Too many arguments." << endl;
+        return -1;
     }
-    else
+    else if (argc == 2)
     {
-        file.close();
+        filename = (string)argv[1];
+
         read_file(filename, buffer);
     }
 
+    cout << "Welcome to Notepad--!" << endl << "Enter 'H' for help and 'Q' to quit." << endl;
+    for (int i = 0; i < 80; i++)
+        cout << "-";
+    cout << endl;
 
     while(command != 'Q')
     // runs the editer until Q (quit input is given)
     {
-        cout << filename << ": " << line << "> ";
+        cout << line << "> ";
         cin >> command;
 
         temp = getchar();
@@ -61,13 +57,18 @@ int main ()
 
                 if (temp != 'Y')
                     break;
+                cin.ignore();
 
             case 'w':
             case 'W':
-                if (temp != '\n')
+                if (filename == "")
+                {
+                    cout << "Enter filename: ";
                     getline(cin, filename);
+                }
 
                 write(filename, buffer);
+                staychanged = false;
                 break;
 
             case 'j':
@@ -128,7 +129,7 @@ int main ()
                 {
                     change = remove(buffer, line, line);
                     if (!staychanged && change)
-                        staychanged = change;
+                        staychanged = change; 
                     break;
                 }
                 
@@ -157,6 +158,10 @@ int main ()
                 cout << "Invalid Input" << endl;
                 cout << "Enter H for Help" << endl << endl;
 
+        }
+        if (buffer->empty() || buffer->size() < line)
+        {
+            line = 1;
         }
     
     }
