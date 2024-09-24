@@ -36,7 +36,10 @@ int main (int argc, char *argv[])
     while(command != 'Q')
     // runs the editer until Q (quit input is given)
     {
-        cout << line << "> ";
+        if (staychanged)
+            cout << line << "!> ";
+        else
+            cout << line << "> ";
         cin >> command;
 
         temp = getchar();
@@ -82,7 +85,7 @@ int main (int argc, char *argv[])
                 if (temp != '\n')
                     getline(cin, feed);
                 else
-                    feed = "\n";
+                    feed = "";
 
                 change = insert_at(line, feed, buffer);
                 if (!staychanged && change)
@@ -94,7 +97,7 @@ int main (int argc, char *argv[])
                 if (temp != '\n')
                     getline(cin, feed);
                 else
-                    feed = "\n";
+                    feed = "";
 
                 change = insert_after(line, feed, buffer);
                 if (!staychanged && change)
