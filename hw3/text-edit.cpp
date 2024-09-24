@@ -1,8 +1,6 @@
 #include "text-edit.h"
 
 int main (int argc, char *argv[])
-// text editer within the command line
-// should i use a vector and a trys and throws and excpetions?
 {
     vector<string> *buffer = new vector<string>;
 
@@ -34,7 +32,6 @@ int main (int argc, char *argv[])
     cout << endl;
 
     while(command != 'Q')
-    // runs the editer until Q (quit input is given)
     {
         if (staychanged)
             cout << line << "!> ";
@@ -64,6 +61,8 @@ int main (int argc, char *argv[])
 
             case 'w':
             case 'W':
+                if (temp != '\n')
+                    getline(cin, filename);
                 if (filename == "")
                 {
                     cout << "Enter filename: ";
