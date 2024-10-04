@@ -57,3 +57,16 @@ public:
     return sstream.str();
     }
 };
+
+class InvalidRotationException : public Exceptions
+{
+
+public:
+    InvalidRotationException(int eNo, string msg) : Exceptions(eNo, msg) {}
+    string toString()
+    {
+    stringstream sstream;
+    sstream << "InvalidRotationException: " << errorNumber << " ERROR: " << message;
+    return sstream.str();
+    }
+};

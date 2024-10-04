@@ -22,9 +22,9 @@ class avlTree
         TreeNode* right;
 
         // avl data
-        int total_height;
-        int left_height;
-        int right_height;
+        int depth;
+        int l_depth;
+        int r_depth;
 
         TreeNode() { parent = left = right = nullptr; total_height = left_height = right_height = 0; }
     };
@@ -112,6 +112,9 @@ void avlTree<DATA_TYPE>::privateRotateRight(TreeNode* node)
     //right child becomes new left child of original parent
     //nodes grandparent becomes nodes parent
 
+    /*Nodes left depth will stay the same
+        nodes right depth will be node->right->abs(depth)+1 */
+
     TreeNode* P = node->parent;
     TreeNode* GP = node->parent->parent;
     TreeNode* RC = node->right;
@@ -119,75 +122,34 @@ void avlTree<DATA_TYPE>::privateRotateRight(TreeNode* node)
 
     if(node == root || P->left != node)//node is the root or node isnt rotatable left (there is nothing to rotate)
     {
-        return;
+        DuplicateItemException exception(__LINE__, "Invalid node to rotate");
+        throw exception;
     }
-    else if(GP)// node has a grandparent
+    
+    P->left = RC;
+    if(RC) //node had a right child
+        RC->parent = P;
+
+    node->right = P;
+    P->parent = node;
+
+    if(!GP && P == root) //node does not have a grandparent (nodes parent is root)
     {
-        if(RC)//node has a right child
-        {            
-            P->left = RC;
-            RC->parent = P;
-
-            node->right = P;
-            P->parent = node;
-
-            node->parent = GP;
-            if(GP->right == P)
-            {
-                GP->right = node;
-            }
-            else if(GP->left == P)
-            {
-                GP->left = node;
-            }
-        }
-        else if(!RC)//node does not have a right child
-        {
-            P->left = nullptr;
-
-            node->right = P;
-            P->parent = node;
-
-            node->parent = GP;
-            if(GP->right == P)
-            {
-                GP->right = node;
-            }
-            else if(GP->left == P)
-            {
-                GP->left = node;
-            }
-
-        }
+        node->parent = nullptr;
+        root = node;
     }
-    else if(!GP && P == root)//node does not have a grandparent (nodes parent is root)
+    else // node had a grandparent 
     {
-        if(RC)//node has a right child
+        node->parent = GP;
+        if(GP->right == P)
         {
-            P->left = RC;
-            RC->parent = P;
-
-            node->right = P;
-            P->parent = node;
-
-            node->parent = nullptr;
-            root = node;
+            GP->right = node;
         }
-        else if(!node->right)// node does not have a right child
+        else if(GP->left == P)
         {
-            P->left = nullptr;
-
-            node->right = P;
-            P->parent = node;
-            
-            node->parent = nullptr;
-            root = node;
+            GP->left = node;
         }
-
     }
-
-
-
 }
 
 template <typename DATA_TYPE>
@@ -205,74 +167,34 @@ void avlTree<DATA_TYPE>::privateRotateLeft(TreeNode* node)
 
     if(node == root || P->right != node)//node is the root or node isnt rotatable right (there is nothing to rotate)
     {
-        return;
+        DuplicateItemException exception(__LINE__, "Invalid node to rotate");
+        throw exception;
     }
-    else if(GP)// node has a grandparent
+
+    P->right = LC;
+    if(LC) // node has a left child
+        LC->parent = P;
+
+    node->left = P;
+    P->parent = node;
+
+    if (!GP && P == root) // node does not have a grandparent (nodes parent is root)
+    {       
+        node->parent = nullptr;
+        root = node;
+    }
+    else // node had a grandparent
     {
-        if(LC)//node has a left child
-        {            
-            P->right = LC;
-            LC->parent = P;
-
-            node->left = P;
-            P->parent = node;
-
-            node->parent = GP;
-            if(GP->left == P)
-            {
-                GP->left = node;
-            }
-            else if(GP->right == P)
-            {
-                GP->right = node;
-            }
-        }
-        else if(!LC)//node does not have a left child
+        node->parent = GP;
+        if(GP->left == P)
         {
-            P->right = nullptr;
-
-            node->left = P;
-            P->parent = node;
-
-            node->parent = GP;
-            if(GP->left == P)
-            {
-                GP->left = node;
-            }
-            else if(GP->right == P)
-            {
-                GP->right = node;
-            }
-
+            GP->left = node;
+        }
+        else if(GP->right == P)
+        {
+            GP->right = node;
         }
     }
-    else if(!GP && P == root)//node does not have a grandparent (nodes parent is root)
-    {
-        if(LC)//node has a left child
-        {
-            P->right = LC;
-            LC->parent = P;
-
-            node->left = P;
-            P->parent = node;
-
-            node->parent = nullptr;
-            root = node;
-        }
-        else if(!node->left)// node does not have a left child
-        {
-            P->right = nullptr;
-            
-            node->left = P;
-            P->parent = node;
-            
-            node->parent = nullptr;
-            root = node;
-        }
-
-    }
-
-
 }
 
 template <typename DATA_TYPE>
