@@ -61,7 +61,7 @@ public:
     ~avlTree();
 
     //
-    int size();
+    int count();
 
     //
     void insert(DATA_TYPE item);
@@ -267,7 +267,6 @@ void avlTree<DATA_TYPE>::adjustHeight(TreeNode* node, bool toRoot, TreeNode* chi
         node->factor = 0;
     }
 
-
     //potentially worry about a case where the user tries to rotate. otherwise the rotate function wont ever set this out of sort
 
     //insert cases (insert cannot go out of sort until at least two levels, hence grandchild cannot equal nullptr)
@@ -292,14 +291,18 @@ void avlTree<DATA_TYPE>::adjustHeight(TreeNode* node, bool toRoot, TreeNode* chi
 template <typename DATA_TYPE>
 void avlTree<DATA_TYPE>::insertCase(TreeNode* node, TreeNode* child, TreeNode* grandchild)
 {
-    cout << "Remidiating insert case" << endl << endl;
+    cout << "Remidiating insert case" << endl;
 
     if (child == node->left)
     {    
         if(grandchild == child->left) // left left
+        {
+            cout << "Left Left case" << endl;
             privateRotateRight(child);
+        }
         else if (grandchild == child->right)// left right??
         {
+            cout << "Left Right case" << endl;
             privateRotateLeft(grandchild);
             privateRotateRight(grandchild);
         }
@@ -307,9 +310,13 @@ void avlTree<DATA_TYPE>::insertCase(TreeNode* node, TreeNode* child, TreeNode* g
     else if (child == node->right)
     {
         if(grandchild == child->right) // right right
+        {
+            cout << "Right Right case" << endl;
             privateRotateLeft(child);
+        }
         else if (grandchild == child->left)// right left??
         {    
+            cout << "Right Left case" << endl;
             privateRotateRight(grandchild);
             privateRotateLeft(grandchild);
         }
@@ -319,33 +326,41 @@ void avlTree<DATA_TYPE>::insertCase(TreeNode* node, TreeNode* child, TreeNode* g
 template <typename DATA_TYPE>
 void avlTree<DATA_TYPE>::removeCase(TreeNode* node, TreeNode* child)
 {
-    cout << "Remidiating remove case" << endl << endl;
+    cout << "Remidiating remove case" << endl;
 
     if (child == node->left)
     {    
         if(node->right->factor == -1) // check for double rotation
         {    
+            cout << "Double rotation on left child of right uncle"<< endl;
             privateRotateRight(node->right->left);
             privateRotateLeft(node->right);
         }
         else // single rotation
+        {
+            cout << "Single rotation on right uncle"<< endl;
             privateRotateLeft(node->right);
+        }
     }
     else if (child == node->right)
     {
         if(node->left->factor == 1) // check for double rotation
         {    
+            cout << "Double rotation on right child of left uncle"<< endl;
             privateRotateLeft(node->left->right);
             privateRotateRight(node->left);
         }
         else // single rotation
+        {
+            cout << "Single rotation on left uncle"<< endl;
             privateRotateRight(node->left);
+        }
     }
 }
 
 // Public methods
 template <typename DATA_TYPE>
-int avlTree<DATA_TYPE>::size()
+int avlTree<DATA_TYPE>::count()
 {
     return nodeCount;
 }
