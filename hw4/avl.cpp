@@ -292,6 +292,8 @@ void avlTree<DATA_TYPE>::adjustHeight(TreeNode* node, bool toRoot, TreeNode* chi
 template <typename DATA_TYPE>
 void avlTree<DATA_TYPE>::insertCase(TreeNode* node, TreeNode* child, TreeNode* grandchild)
 {
+    cout << "Remidiating insert case" << endl << endl;
+
     if (child == node->left)
     {    
         if(grandchild == child->left) // left left
@@ -317,6 +319,8 @@ void avlTree<DATA_TYPE>::insertCase(TreeNode* node, TreeNode* child, TreeNode* g
 template <typename DATA_TYPE>
 void avlTree<DATA_TYPE>::removeCase(TreeNode* node, TreeNode* child)
 {
+    cout << "Remidiating remove case" << endl << endl;
+
     if (child == node->left)
     {    
         if(node->right->factor == -1) // check for double rotation

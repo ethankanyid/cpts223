@@ -16,40 +16,59 @@ int compare(const DATA_TYPE& item1, const DATA_TYPE& item2)
 
 int main(int const argc, char const *argv[])
 {
+    avlTree<int> tree(compare);
+    char command;
+    int num;
 
-    //try
-    {    
-        avlTree<int> tree(compare);
-        tree.insert(6);
-        tree.insert(4);
-        tree.insert(5);
-        tree.insert(1);
-        tree.insert(3);
-        tree.insert(2);
-        tree.insert(8);
-        tree.insert(7);
-        tree.printTree();
+    while (command != 'Q')
+    {
+        try
+        {   
+            cout << "Enter a command (I or R or Q): ";
+            cin >> command;
 
-        tree.remove(5);
-        tree.remove(6);
-        tree.printTree();
-    }
-    /*catch(DuplicateItemException x)
-    {
-        cout << x.toString() << '\n';
-    }
-    catch(TreeEmptyException x)
-    {
-        cout << x.toString() << '\n';
-    }
-    catch(ItemNotFoundException x)
-    {
-        cout << x.toString() << '\n';
-    }
-    catch(InvalidRotationException x)
-    {
-        cout << x.toString() << '\n';
-    }*/
+            switch (command)
+            {
+                case 'I':
+                case 'i':
+                    cout << "Enter a number to insert: ";
+                    cin >> num;
+                    tree.insert(num);
+                    break;
 
+                case 'R':
+                case 'r':
+                    cout << "Enter a number to remove: ";
+                    cin >> num;
+                    tree.remove(num);
+                    break;
+                
+                case 'Q':
+                case 'q':
+                    command = 'Q';
+                    break;
+                default:
+                    cout << "Invalid Command" << endl;
+            }
+            tree.printTree();
+
+        }
+        catch(DuplicateItemException x)
+        {
+            cout << x.toString() << '\n';
+        }
+        catch(TreeEmptyException x)
+        {
+            cout << x.toString() << '\n';
+        }
+        catch(ItemNotFoundException x)
+        {
+            cout << x.toString() << '\n';
+        }
+        catch(InvalidRotationException x)
+        {
+            cout << x.toString() << '\n';
+        }
+    }
     return 0;
 }
