@@ -17,28 +17,24 @@ int compare(const DATA_TYPE& item1, const DATA_TYPE& item2)
 int main(int const argc, char const *argv[])
 {
 
-    try
+    //try
     {    
         avlTree<int> tree(compare);
-        tree.insert(5);
-        tree.insert(2);
-        tree.insert(9);
-        tree.insert(1);
+        tree.insert(6);
         tree.insert(4);
-        tree.insert(7);
+        tree.insert(5);
+        tree.insert(1);
         tree.insert(3);
+        tree.insert(2);
         tree.insert(8);
+        tree.insert(7);
         tree.printTree();
 
-        //tree.rotateRight(3);
-
-        //tree.printTree();
-
-        //tree.rotateLeft(5);
-
-        //tree.printTree();
+        tree.remove(5);
+        tree.remove(6);
+        tree.printTree();
     }
-    catch(DuplicateItemException x)
+    /*catch(DuplicateItemException x)
     {
         cout << x.toString() << '\n';
     }
@@ -53,7 +49,7 @@ int main(int const argc, char const *argv[])
     catch(InvalidRotationException x)
     {
         cout << x.toString() << '\n';
-    }
+    }*/
 
     return 0;
 }

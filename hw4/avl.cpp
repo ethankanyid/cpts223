@@ -46,7 +46,10 @@ class avlTree
     //
     void privatePrintInOrder(TreeNode* node, int level = 0);
 
-    void adjustHeight(TreeNode* node, bool toRoot = true,TreeNode* child = nullptr,TreeNode* grandchild = nullptr);
+    void adjustHeight(TreeNode* node, bool toRoot = true, TreeNode* child = nullptr, TreeNode* grandchild = nullptr);
+
+    void insertCase(TreeNode* node, TreeNode* child, TreeNode* grandchild);
+    void removeCase(TreeNode* node, TreeNode* child);
 
     // Private members
     TreeNode* root;
@@ -231,62 +234,109 @@ void avlTree<DATA_TYPE>::privatePrintInOrder(TreeNode* node, int level)
 
 template <typename DATA_TYPE>
 void avlTree<DATA_TYPE>::adjustHeight(TreeNode* node, bool toRoot, TreeNode* child, TreeNode* grandchild)
+// three functions call this. privateRotate, insert, and remove
 {
+    // establish base case
+    if (node == root)
+    {
+        toRoot = false;
+    }
+
+    // node has both children and evaluates greater height
     if (node->right && node->left)
     {
         node->height = (node->left->height >= node->right->height) ? node->left->height + 1 : node->right->height + 1;
         node->factor = node->right->height - node->left->height;
     }
+    // node has just the right
     else if (node->right)
     {
         node->height = node->right->height + 1;
-        node->factor = node->right->height +1 ;
+        node->factor = node->right->height + 1;
     }
+    // node has just the left
     else if (node->left)
     {
         node->height = node->left->height + 1;
         node->factor =  -(node->left->height + 1);
     }
+    // node is a leaf node
     else
     {
         node->height = 0;
         node->factor = 0;
     }
-    if (node->factor < -1 || node->factor > 1)
+
+
+    //potentially worry about a case where the user tries to rotate. otherwise the rotate function wont ever set this out of sort
+
+    //insert cases (insert cannot go out of sort until at least two levels, hence grandchild cannot equal nullptr)
+    if ((node->factor < -1 || node->factor > 1) && grandchild != nullptr) 
     {
-        if (child == node->left)
-        {    
-            if(grandchild == child->left) // left left
-            {       
-                privateRotateRight(child);
-            }
-            else if (grandchild == child->right)// left right??
-            {
-                cout << "left right" << endl;
-                privateRotateLeft(grandchild);
-                privateRotateRight(grandchild);
-            }
-        }
-        else if (child == node->right)
-        {
-            if(grandchild == child->right) // right right
-                privateRotateLeft(child);
-            else if (grandchild == child->left)// right left??
-            {    
-                privateRotateRight(grandchild);
-                privateRotateLeft(grandchild);
-            }
-        }
+        insertCase(node, child, grandchild);
     }
-    if (node == root)
+    // delete case
+    else if ((node->factor < -1 || node->factor > 1) && grandchild == nullptr) 
     {
-        toRoot = false;
+        removeCase(node, child);
+
+        child = nullptr; // remain in remove case
     }
     if (toRoot)
-        adjustHeight(node->parent, true, node, child );
-    
+        adjustHeight(node->parent, true, node, child);
+
     return;
         
+}
+
+template <typename DATA_TYPE>
+void avlTree<DATA_TYPE>::insertCase(TreeNode* node, TreeNode* child, TreeNode* grandchild)
+{
+    if (child == node->left)
+    {    
+        if(grandchild == child->left) // left left
+            privateRotateRight(child);
+        else if (grandchild == child->right)// left right??
+        {
+            privateRotateLeft(grandchild);
+            privateRotateRight(grandchild);
+        }
+    }
+    else if (child == node->right)
+    {
+        if(grandchild == child->right) // right right
+            privateRotateLeft(child);
+        else if (grandchild == child->left)// right left??
+        {    
+            privateRotateRight(grandchild);
+            privateRotateLeft(grandchild);
+        }
+    }
+}
+
+template <typename DATA_TYPE>
+void avlTree<DATA_TYPE>::removeCase(TreeNode* node, TreeNode* child)
+{
+    if (child == node->left)
+    {    
+        if(node->right->factor == -1) // check for double rotation
+        {    
+            privateRotateRight(node->right->left);
+            privateRotateLeft(node->right);
+        }
+        else // single rotation
+            privateRotateLeft(node->right);
+    }
+    else if (child == node->right)
+    {
+        if(node->left->factor == 1) // check for double rotation
+        {    
+            privateRotateLeft(node->left->right);
+            privateRotateRight(node->left);
+        }
+        else // single rotation
+            privateRotateRight(node->left);
+    }
 }
 
 // Public methods
@@ -400,7 +450,7 @@ void avlTree<DATA_TYPE>::remove(const DATA_TYPE& item)
     // Check to see if it is a simple or hard case
     if (searchResult->left && searchResult->right)
     {
-        // If hard
+        //If hard
         // reduce to a simple case, then reset the pointer
         // Find the immediate predecessor
         TreeNode* current = searchResult->left;
@@ -421,7 +471,7 @@ void avlTree<DATA_TYPE>::remove(const DATA_TYPE& item)
     if(parent)
     {
         // I'm using a double pointer here rather than having a separate if/else for this.
-        TreeNode** side = parent->right== searchResult ? &(parent->right) : &(parent->left);
+        TreeNode** side = (parent->right == searchResult) ? &(parent->right) : &(parent->left);
         *side = child;
         if(child) 
             child->parent = parent;
@@ -435,6 +485,9 @@ void avlTree<DATA_TYPE>::remove(const DATA_TYPE& item)
     delete searchResult;
     
     nodeCount--;
+
+    adjustHeight(parent);
+    /* predecessor up to root changes*/
 }
 
 template <typename DATA_TYPE>
