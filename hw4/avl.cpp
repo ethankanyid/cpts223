@@ -22,11 +22,10 @@ class avlTree
         TreeNode* right;
 
         // avl data
-        int total_height;
-        int left_height;
-        int right_height;
+        int factor; // -1,0,1
+        int height;  //always positive
 
-        TreeNode() { parent = left = right = nullptr; total_height = left_height = right_height = 0; }
+        TreeNode() { parent = left = right = nullptr; factor = height = 0; }
     };
 
     // This is the member variable that will be used to hold the comparison function
@@ -47,6 +46,11 @@ class avlTree
     //
     void privatePrintInOrder(TreeNode* node, int level = 0);
 
+    void adjustHeight(TreeNode* node, bool toRoot = true, TreeNode* child = nullptr, TreeNode* grandchild = nullptr);
+
+    void insertCase(TreeNode* node, TreeNode* child, TreeNode* grandchild);
+    void removeCase(TreeNode* node, TreeNode* child);
+
     // Private members
     TreeNode* root;
     int nodeCount;
@@ -57,7 +61,7 @@ public:
     ~avlTree();
 
     //
-    int size();
+    int count();
 
     //
     void insert(DATA_TYPE item);
@@ -86,18 +90,18 @@ typename avlTree<DATA_TYPE>::TreeNode* avlTree<DATA_TYPE>::findParentOrDuplicate
     TreeNode* current = root;
     TreeNode* parent = current;
 
-    while (current)
+    while (current) // exits when current is null meaning item was not found
     {
         // -1 right (greater)
         // 1 left (less)
         // 0 item found
         parent = current;
-        if (!compare(current->data, item))
+        if (!compare(current->data, item)) // duplicate detected, returns item node
             break;
         // Next, decide if we need to go left or right.
         if (compare(current->data, item) == 1) // Go left
             current = current->left;
-        else // Go right. Duplicate is detected in the test of the while
+        else // Go right. 
             current = current->right;
     }
 
@@ -119,75 +123,37 @@ void avlTree<DATA_TYPE>::privateRotateRight(TreeNode* node)
 
     if(node == root || P->left != node)//node is the root or node isnt rotatable left (there is nothing to rotate)
     {
-        return;
+        DuplicateItemException exception(__LINE__, "Invalid node to rotate");
+        throw exception;
     }
-    else if(GP)// node has a grandparent
+    
+    P->left = RC;
+    if(RC) //node had a right child
+        RC->parent = P;
+
+    node->right = P;
+    P->parent = node;
+
+    if(!GP && P == root) //node does not have a grandparent (nodes parent is root)
     {
-        if(RC)//node has a right child
-        {            
-            P->left = RC;
-            RC->parent = P;
-
-            node->right = P;
-            P->parent = node;
-
-            node->parent = GP;
-            if(GP->right == P)
-            {
-                GP->right = node;
-            }
-            else if(GP->left == P)
-            {
-                GP->left = node;
-            }
-        }
-        else if(!RC)//node does not have a right child
-        {
-            P->left = nullptr;
-
-            node->right = P;
-            P->parent = node;
-
-            node->parent = GP;
-            if(GP->right == P)
-            {
-                GP->right = node;
-            }
-            else if(GP->left == P)
-            {
-                GP->left = node;
-            }
-
-        }
+        node->parent = nullptr;
+        root = node;
     }
-    else if(!GP && P == root)//node does not have a grandparent (nodes parent is root)
+    else // node had a grandparent 
     {
-        if(RC)//node has a right child
+        node->parent = GP;
+        if(GP->right == P)
         {
-            P->left = RC;
-            RC->parent = P;
-
-            node->right = P;
-            P->parent = node;
-
-            node->parent = nullptr;
-            root = node;
+            GP->right = node;
         }
-        else if(!node->right)// node does not have a right child
+        else if(GP->left == P)
         {
-            P->left = nullptr;
-
-            node->right = P;
-            P->parent = node;
-            
-            node->parent = nullptr;
-            root = node;
+            GP->left = node;
         }
-
     }
-
-
-
+    // adjust height
+    adjustHeight(P, false);
+    adjustHeight(node,false);
 }
 
 template <typename DATA_TYPE>
@@ -205,74 +171,39 @@ void avlTree<DATA_TYPE>::privateRotateLeft(TreeNode* node)
 
     if(node == root || P->right != node)//node is the root or node isnt rotatable right (there is nothing to rotate)
     {
-        return;
+        DuplicateItemException exception(__LINE__, "Invalid node to rotate");
+        throw exception;
     }
-    else if(GP)// node has a grandparent
+
+    P->right = LC;
+    if(LC) // node has a left child
+        LC->parent = P;
+
+    node->left = P;
+    P->parent = node;
+
+    if (!GP && P == root) // node does not have a grandparent (nodes parent is root)
+    {       
+        node->parent = nullptr;
+        root = node;
+    }
+    else // node had a grandparent
     {
-        if(LC)//node has a left child
-        {            
-            P->right = LC;
-            LC->parent = P;
-
-            node->left = P;
-            P->parent = node;
-
-            node->parent = GP;
-            if(GP->left == P)
-            {
-                GP->left = node;
-            }
-            else if(GP->right == P)
-            {
-                GP->right = node;
-            }
-        }
-        else if(!LC)//node does not have a left child
+        node->parent = GP;
+        if(GP->left == P)
         {
-            P->right = nullptr;
-
-            node->left = P;
-            P->parent = node;
-
-            node->parent = GP;
-            if(GP->left == P)
-            {
-                GP->left = node;
-            }
-            else if(GP->right == P)
-            {
-                GP->right = node;
-            }
-
+            GP->left = node;
+        }
+        else if(GP->right == P)
+        {
+            GP->right = node;
         }
     }
-    else if(!GP && P == root)//node does not have a grandparent (nodes parent is root)
-    {
-        if(LC)//node has a left child
-        {
-            P->right = LC;
-            LC->parent = P;
 
-            node->left = P;
-            P->parent = node;
-
-            node->parent = nullptr;
-            root = node;
-        }
-        else if(!node->left)// node does not have a left child
-        {
-            P->right = nullptr;
-            
-            node->left = P;
-            P->parent = node;
-            
-            node->parent = nullptr;
-            root = node;
-        }
-
-    }
-
-
+    // adjust height
+    adjustHeight(P, false);
+    adjustHeight(node,false);
+    
 }
 
 template <typename DATA_TYPE>
@@ -296,14 +227,140 @@ void avlTree<DATA_TYPE>::privatePrintInOrder(TreeNode* node, int level)
     }
 
     level++;
-    cout << "Level: " << level << " Data: " << node->data << " " << endl;  // visit
+    cout << "Level: " << level << " Data: " << node->data << " \n\tHeight: " << node->height << " \n\tFactor: " << node->factor << endl;  // visit
     privatePrintInOrder(node->left,level);
     privatePrintInOrder(node->right,level);
 }
 
+template <typename DATA_TYPE>
+void avlTree<DATA_TYPE>::adjustHeight(TreeNode* node, bool toRoot, TreeNode* child, TreeNode* grandchild)
+// three functions call this. privateRotate, insert, and remove
+{
+    // establish base case
+    if (node == root)
+    {
+        toRoot = false;
+    }
+
+    // node has both children and evaluates greater height
+    if (node->right && node->left)
+    {
+        node->height = (node->left->height >= node->right->height) ? node->left->height + 1 : node->right->height + 1;
+        node->factor = node->right->height - node->left->height;
+    }
+    // node has just the right
+    else if (node->right)
+    {
+        node->height = node->right->height + 1;
+        node->factor = node->right->height + 1;
+    }
+    // node has just the left
+    else if (node->left)
+    {
+        node->height = node->left->height + 1;
+        node->factor =  -(node->left->height + 1);
+    }
+    // node is a leaf node
+    else
+    {
+        node->height = 0;
+        node->factor = 0;
+    }
+
+    //potentially worry about a case where the user tries to rotate. otherwise the rotate function wont ever set this out of sort
+
+    //insert cases (insert cannot go out of sort until at least two levels, hence grandchild cannot equal nullptr)
+    if ((node->factor < -1 || node->factor > 1) && grandchild != nullptr) 
+    {
+        insertCase(node, child, grandchild);
+    }
+    // delete case
+    else if ((node->factor < -1 || node->factor > 1) && grandchild == nullptr) 
+    {
+        removeCase(node, child);
+
+        child = nullptr; // remain in remove case
+    }
+    if (toRoot)
+        adjustHeight(node->parent, true, node, child);
+
+    return;
+        
+}
+
+template <typename DATA_TYPE>
+void avlTree<DATA_TYPE>::insertCase(TreeNode* node, TreeNode* child, TreeNode* grandchild)
+{
+    cout << "Remidiating insert case" << endl;
+
+    if (child == node->left)
+    {    
+        if(grandchild == child->left) // left left
+        {
+            cout << "Left Left case" << endl;
+            privateRotateRight(child);
+        }
+        else if (grandchild == child->right)// left right??
+        {
+            cout << "Left Right case" << endl;
+            privateRotateLeft(grandchild);
+            privateRotateRight(grandchild);
+        }
+    }
+    else if (child == node->right)
+    {
+        if(grandchild == child->right) // right right
+        {
+            cout << "Right Right case" << endl;
+            privateRotateLeft(child);
+        }
+        else if (grandchild == child->left)// right left??
+        {    
+            cout << "Right Left case" << endl;
+            privateRotateRight(grandchild);
+            privateRotateLeft(grandchild);
+        }
+    }
+}
+
+template <typename DATA_TYPE>
+void avlTree<DATA_TYPE>::removeCase(TreeNode* node, TreeNode* child)
+{
+    cout << "Remidiating remove case" << endl;
+
+    if (child == node->left)
+    {    
+        if(node->right->factor == -1) // check for double rotation
+        {    
+            cout << "Double rotation on left child of right uncle"<< endl;
+            privateRotateRight(node->right->left);
+            privateRotateLeft(node->right);
+        }
+        else // single rotation
+        {
+            cout << "Single rotation on right uncle"<< endl;
+            privateRotateLeft(node->right);
+        }
+    }
+    else if (child == node->right)
+    {
+        if(node->left->factor == 1) // check for double rotation
+        {    
+            cout << "Double rotation on right child of left uncle"<< endl;
+            privateRotateLeft(node->left->right);
+            privateRotateRight(node->left);
+        }
+        else // single rotation
+        {
+            cout << "Single rotation on left uncle"<< endl;
+            privateRotateRight(node->left);
+        }
+    }
+}
+
 // Public methods
 template <typename DATA_TYPE>
-int avlTree<DATA_TYPE>::size()
+int avlTree<DATA_TYPE>::count()
 {
     return nodeCount;
 }
@@ -393,6 +450,9 @@ void avlTree<DATA_TYPE>::insert(DATA_TYPE item)
 
     // Increment the node counter
     nodeCount++;
+
+    //fix heights
+    adjustHeight(searchNode, true, node);
 }
 
 template <typename DATA_TYPE>
@@ -409,7 +469,7 @@ void avlTree<DATA_TYPE>::remove(const DATA_TYPE& item)
     // Check to see if it is a simple or hard case
     if (searchResult->left && searchResult->right)
     {
-        // If hard
+        //If hard
         // reduce to a simple case, then reset the pointer
         // Find the immediate predecessor
         TreeNode* current = searchResult->left;
@@ -430,7 +490,7 @@ void avlTree<DATA_TYPE>::remove(const DATA_TYPE& item)
     if(parent)
     {
         // I'm using a double pointer here rather than having a separate if/else for this.
-        TreeNode** side = parent->right== searchResult ? &(parent->right) : &(parent->left);
+        TreeNode** side = (parent->right == searchResult) ? &(parent->right) : &(parent->left);
         *side = child;
         if(child) 
             child->parent = parent;
@@ -444,6 +504,9 @@ void avlTree<DATA_TYPE>::remove(const DATA_TYPE& item)
     delete searchResult;
     
     nodeCount--;
+
+    adjustHeight(parent);
+    /* predecessor up to root changes*/
 }
 
 template <typename DATA_TYPE>
